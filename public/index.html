@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Realtime Chat App</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #messages { list-style-type: none; padding: 0; }
+        #messages li { padding: 8px; background: #eee; margin-bottom: 5px; }
+        #messages li:nth-child(odd) { background: #ddd; }
+    </style>
+</head>
+<body>
+    <h1>CoderCrafter Chat</h1>
+    <ul id="messages"></ul>
+
+    <form id="conversationForm" action="">
+        <input id="user1Id" placeholder="User Id 1" autocomplete="off" />
+        <input id="user2Id" placeholder="User Id 2" autocomplete="off" />
+        <button>Start Conversation</button>
+    </form>
+    <form id="form" action="">
+        <!-- <input id="currentUserId" placeholder="Your Id" autocomplete="off" /> -->
+        <!-- <input id="freindUserId" placeholder="Your freind Id" autocomplete="off" /> -->
+        <input id="messageInput" placeholder="Type your message..." autocomplete="off" />
+        <button>Send</button>
+    </form>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="./client.js">
+    </script>
+</body>
+</html>
+
