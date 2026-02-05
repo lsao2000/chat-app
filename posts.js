@@ -96,7 +96,8 @@ myApp.put("/user/updatePost/:id", verifyToken, (req, res) => {
 })
 myApp.get("/allPosts", (req, res) => {
     try {
-        mydb.query("SELECT p.post_id, p.topic, p.description, p.created_at, COUNT(CASE WHEN i.type = 'like' THEN 1 END) as likes, COUNT(CASE WHEN i.type = 'dislike' THEN 1 END) as dislikes FROM posts p LEFT JOIN interactions i ON p.post_id = i.post_id GROUP BY p.post_id ORDER BY p.created_at DESC", (err, result) => {
+        // mydb.query("SELECT p.post_id, p.topic, p.description, p.created_at, COUNT(CASE WHEN i.type = 'like' THEN 1 END) as likes, COUNT(CASE WHEN i.type = 'dislike' THEN 1 END) as dislikes FROM posts p LEFT JOIN interactions i ON p.post_id = i.post_id GROUP BY p.post_id ORDER BY p.created_at DESC", (err, result) => {
+        mydb.query("SELECT posts.post_id, posts.usr_id, posts.topic, posts.description, posts.created_at, users.name as poster, users.image_url as profile_image, COUNT(CASE WHEN interactions.type = 'dislike' THEN 1 END) AS dislike, COUNT(CASE WHEN interactions.type = 'like' THEN 1 END) AS`like` FROM posts JOIN users ON posts.usr_id = users.user_id LEFT JOIN interactions ON posts.post_id = interactions.post_id GROUP BY posts.post_id ORDER BY posts.created_at DESC ", (err, result) => {
             if (err) {
                 return res.status(500).json({ success: false, message: "database error " + err.message })
             }

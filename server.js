@@ -27,7 +27,6 @@ app.use(cors())
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 app.use("/chat", express.static(path.join(__dirname, 'public')));
-const PORT = 3000;
 app.use("/api", postApp)
 app.use("/api", interactionApp);
 app.use("/auth", authApp)
@@ -114,6 +113,7 @@ io.on("connection", (socket) => {
 io.emit("welcome", "WELCOME TO THE REALTIME CHAT APPLICATION");
 
 
+const PORT = 3000;
 server.listen(PORT, () => {
     console.log("SERVER RUNING");
 })
