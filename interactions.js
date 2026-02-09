@@ -62,17 +62,20 @@ interactionApp.delete("/removeInteractions/:postId", verifyToken, (req, res) => 
 interactionApp.get("/postInteractions/:postId", (req, res) => {
     try {
 
-        const postId = req.params.postId
+        const postId = parseInt(req.params.postId)
         mydb.query("SELECT * FROM interactions WHERE post_id = ?", [postId], (err, result) => {
             if (err) {
-                res.status(500).json({ success: false, message: `Database Error ${err.message}` })
-            } else if (result.length === 0) {
-                res.status(400).json({ success: false, message: "Couldn't find post" })
+                return res.status(500).json({ success: false, message: `Database Error ${err.message}` })
+            }
+            else if (result.length === 0) {
+                return res.status(400).json({
+                    success: false, message: "Couldn't find interactions for the post",
+                })
             }
             return res.status(200).json({
                 success: true,
                 message: "interactions fitched succesfully",
-                result
+                result,
             })
         })
     } catch (error) {

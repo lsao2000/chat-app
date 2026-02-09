@@ -9,7 +9,7 @@ const chatApp = express()
 chatApp.get("/users", verifyToken, (req, res) => {
     try {
         const userId = req.userId
-        mydb.query("SELECT name,email,age,gender,bio,image_url FROM users WHERE user_id != ?", [userId], (err, result) => {
+        mydb.query("SELECT user_id,name,email,age,gender,bio,image_url FROM users WHERE user_id != ?", [userId], (err, result) => {
             if (err) {
                 return res.status(500).json({ success: false, message: "Database Error " + err.message })
             }

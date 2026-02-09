@@ -16,12 +16,13 @@ const { sortAndDeduplicateDiagnostics } = require('typescript');
 const app = express();
 const server = http.createServer(app)
 const io = new Server(
-    server, {
-    cors: {
-        origin: "*",
-        methods: ["GET", "POST", "DELETE", "UPDATE"]
+    server,
+    {
+        cors: {
+            origin: "*",
+            methods: ["GET", "POST", "DELETE", "UPDATE"]
+        }
     }
-}
 )
 app.use(cors())
 app.use(express.json());
