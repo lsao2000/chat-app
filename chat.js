@@ -1,6 +1,7 @@
 const express = require("express")
 const verifyToken = require("./middleware/authMiddleware")
 const mydb = require("./config")
+const { verify } = require("jsonwebtoken")
 
 
 const chatApp = express()
@@ -52,6 +53,21 @@ chatApp.post("/send-message", verifyToken, (req, res) => {
         })
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message })
+    }
+})
+chatApp.get("/freinds", verifyToken, (req, res) => {
+    try {
+        const userId = req.userId
+        mydb.query("select users.user_id,users.name,users.gender,users.image_url from conversation_group convG1 join conversation_group convG2 on convG1.conversation_id = convG2.conversation_id " +
+            "join users on users.user_id = convG2.user_id where convG1.user_id = ? and convG2.user_id != ?", [userId, userId], (err, result) => {
+                if (err) {
+                    return res.json({ error: err.message })
+                }
+                return res.json({ success: true, result })
+            })
+        // return res.json({ status: true, message: userId })
+    } catch (error) {
+        return res.json({ error: error.message })
     }
 })
 function getOrCreateConversation(user1Id, user2Id, cb) {
