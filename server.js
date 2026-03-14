@@ -36,6 +36,11 @@ app.use("/api", chatApp)
 var messagesData = [];
 io.on("connection", (socket) => {
     console.log('a user connected ' + socket.id);
+    socket.on("registerUser", (data) => {
+        const userId = data.userId;
+        // socket.join(userId);
+        console.log(`User ${socket.id} joined room ${userId}`);
+    });
     socket.on("joinRoom", (data) => {
         const user1Id = data.user1Id;
         const user2Id = data.user2Id;

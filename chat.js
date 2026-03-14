@@ -55,6 +55,31 @@ chatApp.post("/send-message", verifyToken, (req, res) => {
         return res.status(500).json({ success: false, message: error.message })
     }
 })
+chatApp.get("/messages/:freindId", verifyToken, (req, res) => {
+    try {
+        const user1Id = req.userId
+        const user2Id = req.params.freindId
+        mydb.query("SELECT convG1.conversation_id from conversation_group convG1 JOIN conversation_group convG2 ON convG1.conversation_id = convG2.conversation_id " +
+            "WHERE convG1.user_id = ? AND convG2.user_id = ?", [user1Id, user2Id], (err, result) => {
+                if (err) {
+                    return res.status(500).json({ success: false, message: "Database Error 1: " + err.message })
+                }
+                else if (result.length === 0) {
+                    return res.status(400).json({ success: false, message: "There is no conversation found between the users, " + user1Id + " and " + user2Id })
+                }
+                const conversation_id = result[0].conversation_id
+                mydb.query("SELECT cm.message,cm.created_at,cm.sender_id,cm.message_id,cm.message_type, u.name FROM conversation_messages cm JOIN users u ON cm.sender_id = u.user_id WHERE cm.conversation_id = ?", [conversation_id], (err, result) => {
+                    if (err) {
+                        return res.status(500).json({ success: false, message: "Database Error 2: " + err.message })
+                    }
+                    return res.status(200).json({ success: true, result })
+                })
+            })
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message })
+    }
+})
+
 chatApp.get("/freinds", verifyToken, (req, res) => {
     try {
         const userId = req.userId

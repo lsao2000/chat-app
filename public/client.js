@@ -10,7 +10,8 @@ const messages = document.getElementById('messages');
 conversationForm.addEventListener('submit', (e) => {
     e.preventDefault(); // Prevent page refresh on form submit
     if (user1Id.value && user2Id.value) {
-        socket.emit("joinRoom", { user1Id: parseInt(user1Id.value), user2Id: parseInt(user2Id.value) });
+        socket.emit("joinRoom",
+            { user1Id: parseInt(user1Id.value), user2Id: parseInt(user2Id.value) });
         // Emit a 'chat message' event to the server
         // socket.emit('chat message', {
         //     senderId: parseInt(userId.value),
