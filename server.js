@@ -39,7 +39,6 @@ io.on("connection", (socket) => {
     socket.on("registerUser", (data) => {
         const userId = data.userId;
         // socket.join(userId);
-        console.log(`User ${socket.id} joined room ${userId}`);
     });
     socket.on("joinRoom", (data) => {
         const user1Id = data.user1Id;
