@@ -8,9 +8,6 @@ const http = require("http");
 const { Server } = require("socket.io")
 const cors = require("cors")
 const mydb = require("./config.js");
-const { log } = require('console');
-const { sortAndDeduplicateDiagnostics } = require('typescript');
-// const realtimeChat = require("./realtime-chat.js")
 
 
 const app = express();
@@ -38,81 +35,62 @@ io.on("connection", (socket) => {
     console.log('a user connected ' + socket.id);
     socket.on("registerUser", (data) => {
         const userId = data.userId;
+        console.log(`User ${socket.id} registered with userId: ${userId}`);
         // socket.join(userId);
     });
+
     socket.on("joinRoom", (data) => {
-        const user1Id = data.user1Id;
-        const user2Id = data.user2Id;
+        const userId = data.userId;
+        const roomId = data.roomId;
+        socket.join(roomId);
+        console.log(`User ${userId} joined room ${roomId}`);
         try {
-            mydb.query("SELECT convG1.conversation_id from conversation_group convG1 JOIN conversation_group convG2 ON convG1.conversation_id = convG2.conversation_id " +
-                "WHERE convG1.user_id = ? AND convG2.user_id = ?", [user1Id, user2Id], (err, result) => {
-                    if (err) {
-                        console.log("Database error:", err);
-                    } else if (result.length > 0) {
-                        const conversation_id = result[0].conversation_id
-                        socket.join(conversation_id);
-                        console.log(`User ${socket.id} joined conversation ${conversation_id}`);
-                        mydb.query("select * from conversation_messages where conversation_id = ?", [conversation_id], (err, res) => {
-                            messagesData = [];
-                            if (err) {
-                                console.error("Error fetching messages:", err);
-                            } else if (res.length > 0) {
-                                if (res.length > 1) {
-                                    res.forEach(msg => {
-                                        messagesData = [...messagesData, {
-                                            senderId: msg.sender_id,
-                                            receiverId: user1Id === msg.sender_id ? user2Id : user1Id,
-                                            msg: msg.message,
-                                        }];
-                                    });
-                                } else if (res.length === 1) {
-                                    messagesData = [...messagesData, {
-                                        senderId: res[0].sender_id,
-                                        receiverId: user1Id === res[0].sender_id ? user2Id : user1Id,
-                                        msg: res[0].message,
-                                        // timestamp: res[0].created_at
-                                    }];
-                                }
-                                // messagesData = [...messagesData, data]
-                                // console.log("Fetched messages:", res);
-                                socket.emit('conversation_data', messagesData);
-                                // io.emit('conversation_data', messagesData);
-                            }
-                        });
-                        // socket.
-                    } else {
-                        console.log("No conversation found between these users.");
-                    }
-                });
-        } catch (error) {
-
-        }
-    });
-
-    socket.on('chat message', (data) => {
-        // console.log('message: ' + data.msg + ' from user: ' + data.user);
-        const user1Id = parseInt(data.senderId);
-        const user2Id = parseInt(data.receiverId);
-        const messageText = data.msg;
-        try {
-            mydb.query("SELECT convG1.conversation_id from conversation_group convG1 JOIN conversation_group convG2 ON convG1.conversation_id = convG2.conversation_id " +
-                "WHERE convG1.user_id = ? AND convG2.user_id = ?", [user1Id, user2Id], (err, result) => {
-                    if (err) {
-                        console.log("Database error:", err);
-                    }
-                    else if (result.length > 0) {
-                        const conversation_id = result[0].conversation_id;
-                        messagesData = [data]
-                        io.to(conversation_id).emit('chat message', messagesData);
-                    } else {
-                        console.error("No conversation found between these users.");
-                    }
-                })
+            mydb.query("SELECT * FROM conversation_messages WHERE conversation_id = ?", [roomId], (err, result) => {
+                if (err) {
+                    console.error("Database error:", err);
+                } else if (result.length > 0) {
+                    const messagesData = result.map(msg => ({
+                        senderId: msg.sender_id,
+                        receiverId: userId === msg.sender_id ? null : userId, // Assuming the receiver is the other user in the conversation
+                        msg: msg.message,
+                    }));
+                    socket.emit('msg:data', messagesData);
+                } else {
+                    console.log("No messages found for this conversation.");
+                }
+            })
         } catch (error) {
             console.error("Error retrieving conversation:", error);
         }
     });
+
+    socket.on("chat:send", (data) => {
+        const conversation_id = data.roomId;
+        const message = data.msg;
+        const sender_id = data.senderId;
+        console.log("Received chat:send event with data:", data);
+        console.log(`Received message from user ${sender_id} in conversation ${conversation_id}: ${message}`);
+        if (!conversation_id || !message || !sender_id) {
+            console.error("Missing required fields: roomId, messageText, or senderId");
+            return;
+        }
+        const messageData = {
+            sender_id,
+            conversation_id,
+            message
+        }
+        io.to(conversation_id).emit("chat:receive", messageData);
+        // mydb.query("INSERT INTO conversation_messages SET ?", messageData, (err, result) => {
+        //     if (err) {
+        //         console.error("Database error:", err);
+        //         return;
+        //     }
+        //     console.log("Message inserted into database with ID:", result.insertId);
+        // })
+    })
+
     socket.on('disconnect', () => {
+        console.log('user disconnected ' + socket.id);
     });
 })
 io.emit("welcome", "WELCOME TO THE REALTIME CHAT APPLICATION");
